@@ -40,5 +40,11 @@ public class ChatService {
         User currentUser = userService.getCurrentUser();
         return chatRepository.findByUser1OrUser2(currentUser, currentUser);
     }
+
+    public void deleteChat(Long chatId) {
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new RuntimeException("Chat not found"));
+        chatRepository.delete(chat);
+    }
 }
 

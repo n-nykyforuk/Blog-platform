@@ -1,5 +1,6 @@
 package instagram.blog.Controller;
 
+import instagram.blog.DTO.MessageDTO;
 import instagram.blog.Entity.Message;
 import instagram.blog.Service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +18,31 @@ public class MessageController {
     private MessageService messageService;
 
     @PostMapping("/{chatId}")
-    public ResponseEntity<Message> sendMessage(@PathVariable Long chatId, @RequestBody Map<String, String> body) {
+    public ResponseEntity<MessageDTO> sendMessage(@PathVariable Long chatId, @RequestBody Map<String, String> body) {
         Message message = messageService.sendMessage(chatId, body.get("content"));
-        return ResponseEntity.ok(message);
+
+        MessageDTO dto = new MessageDTO();
+        dto.setId(message.getId());
+        dto.setContent(message.getContent());
+        dto.setSenderUsername(message.getSender().getUsername());
+        dto.setRead(message.isRead());
+
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{chatId}")
-    public ResponseEntity<List<Message>> getMessages(@PathVariable Long chatId) {
+    public ResponseEntity<List<MessageDTO>> getMessages(@PathVariable Long chatId) {
         List<Message> messages = messageService.getMessages(chatId);
-        return ResponseEntity.ok(messages);
+        List<MessageDTO> dtos = messages.stream().map(m -> {
+            MessageDTO dto = new MessageDTO();
+            dto.setId(m.getId());
+            dto.setContent(m.getContent());
+            dto.setSenderUsername(m.getSender().getUsername());
+            dto.setRead(m.isRead());
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(dtos);
     }
 
     @PutMapping("/{chatId}/read")
