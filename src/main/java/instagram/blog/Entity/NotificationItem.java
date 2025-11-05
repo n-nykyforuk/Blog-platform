@@ -1,14 +1,11 @@
 package instagram.blog.Entity;
 
 import jakarta.persistence.*;
-import jakarta.persistence.GenerationType;
 import lombok.Data;
 
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notifications")
 @Data
 public class NotificationItem {
 
@@ -16,22 +13,42 @@ public class NotificationItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId;
     private String fromUser;
 
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    @Column(name = "is_read", nullable = false)
+    private boolean read;
 
-    private boolean read = false;
-    private LocalDateTime timestamp = LocalDateTime.now();
+    @Column(name = "created_at")
+    private LocalDateTime timestamp;
+
+    @Enumerated(EnumType.STRING)
+    private Type type; // звичайний enum
+
+    private String userId;
+
+    public NotificationItem() {
+
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (timestamp == null) {
+            timestamp = LocalDateTime.now();
+        }
+    }
 
     public enum Type {
-        LIKE, COMMENT, MESSAGE, FOLLOW
+        COMMENT,
+        FOLLOW,
+        LIKE,
+        MESSAGE
     }
 
     public NotificationItem(String userId, String fromUser, Type type) {
         this.userId = userId;
         this.fromUser = fromUser;
         this.type = type;
+        this.read = false; // за замовчуванням непрочитане
+        this.timestamp = LocalDateTime.now();
     }
 }

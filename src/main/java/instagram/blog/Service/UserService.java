@@ -2,20 +2,26 @@ package instagram.blog.Service;
 
 import instagram.blog.DTO.*;
 import instagram.blog.Entity.Follow;
+import instagram.blog.Entity.NotificationItem;
 import instagram.blog.Entity.User;
 import instagram.blog.Repository.FollowRepository;
 import instagram.blog.Repository.UserRepository;
 import instagram.blog.Security.JWT.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class    UserService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
@@ -23,6 +29,13 @@ public class    UserService {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    // ✅ Додаємо шлях до upload-директорії
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     public UserService(UserRepository userRepository, FollowRepository followRepository, JwtService jwtService) {
         this.userRepository = userRepository;
@@ -48,8 +61,7 @@ public class    UserService {
         dto.setFollowingCount(user.getFollowing().size());
 
         if (currentUsername != null) {
-            User currentUser = userRepository.findByUsername(currentUsername)
-                    .orElse(null);
+            User currentUser = userRepository.findByUsername(currentUsername).orElse(null);
             if (currentUser != null) {
                 boolean isFollowing = followRepository.existsByFollowerAndFollowed(currentUser, user);
                 boolean isFollowedBy = followRepository.existsByFollowerAndFollowed(user, currentUser);
@@ -57,7 +69,6 @@ public class    UserService {
                 dto.setFollowing(isFollowing);
                 dto.setIsFollowedByCurrentUser(isFollowedBy);
                 dto.setMutualFollow(isFollowing && isFollowedBy);
-
             }
         }
 
@@ -68,22 +79,20 @@ public class    UserService {
             p.setImageUrl(post.getImageUrl());
             p.setCreatedAt(post.getCreatedAt());
 
-            List<CommentDTO> commentDTOs = post.getComments().stream().map(c -> {
+            p.setComments(post.getComments().stream().map(c -> {
                 CommentDTO cdto = new CommentDTO();
                 cdto.setId(c.getId());
                 cdto.setText(c.getText());
                 cdto.setUsername(c.getUser().getUsername());
                 return cdto;
-            }).toList();
-            p.setComments(commentDTOs);
+            }).toList());
 
-            List<LikeDTO> likeDTOs = post.getLikes().stream().map(l -> {
+            p.setLikes(post.getLikes().stream().map(l -> {
                 LikeDTO ldto = new LikeDTO();
                 ldto.setId(l.getId());
                 ldto.setUsername(l.getUser().getUsername());
                 return ldto;
-            }).toList();
-            p.setLikes(likeDTOs);
+            }).toList());
 
             return p;
         }).toList();
@@ -109,6 +118,12 @@ public class    UserService {
         follow.setFollower(follower);
         follow.setFollowed(followed);
         followRepository.save(follow);
+
+        notificationService.addNotification(
+                followed.getId().toString(),
+                follower.getUsername(),
+                NotificationItem.Type.FOLLOW
+        );
     }
 
     public void unfollowUser(String followerUsername, String followedUsername) {
@@ -158,7 +173,6 @@ public class    UserService {
         }
 
         String token = authHeader.substring(7);
-
         String username = jwtService.extractUsername(token);
         if (username == null) {
             throw new RuntimeException("Invalid token: username not found");
@@ -167,4 +181,43 @@ public class    UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    // ✅ Повна реалізація updateAvatar
+    public void updateAvatar(String username, MultipartFile file) {
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // створюємо папку, якщо її ще немає
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // генеруємо унікальне ім'я файлу
+            String fileName = username + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+
+            // копіюємо файл
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // зберігаємо шлях до файлу в базі
+            user.setAvatarUrl("/uploads/" + fileName);
+            userRepository.save(user);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload avatar", e);
+        }
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public List<User> getFollowingUsers(User user) {
+        List<Follow> follows = followRepository.findByFollower(user);
+        return follows.stream()
+                .map(Follow::getFollowed)
+                .collect(Collectors.toList());
+    }
+
 }

@@ -25,6 +25,7 @@ public class MessageController {
         dto.setId(message.getId());
         dto.setContent(message.getContent());
         dto.setSenderUsername(message.getSender().getUsername());
+        dto.setSenderAvatarUrl(message.getSender().getAvatarUrl());
         dto.setRead(message.isRead());
 
         return ResponseEntity.ok(dto);
@@ -38,6 +39,7 @@ public class MessageController {
             dto.setId(m.getId());
             dto.setContent(m.getContent());
             dto.setSenderUsername(m.getSender().getUsername());
+            dto.setSenderAvatarUrl(m.getSender().getAvatarUrl());
             dto.setRead(m.isRead());
             return dto;
         }).toList();

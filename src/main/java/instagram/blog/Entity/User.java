@@ -58,5 +58,11 @@ public class User {
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
     }
+
+    public String getAvatarUrl() {
+        return avatarUrl != null && !avatarUrl.isEmpty()
+                ? avatarUrl
+                : "/uploads/default.jpg";
+    }
 }
 

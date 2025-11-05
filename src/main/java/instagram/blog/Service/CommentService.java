@@ -18,6 +18,9 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService; // ✅ додаємо NotificationService
+
     public void addComment(Long postId, String text) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsernameOrEmail(username, username)
@@ -32,6 +35,15 @@ public class CommentService {
         comment.setPost(post);
 
         commentRepository.save(comment);
+
+        User postOwner = post.getUser();
+        if (!postOwner.getId().equals(user.getId())) {
+            notificationService.addNotification(
+                    postOwner.getId().toString(),
+                    user.getUsername(),
+                    NotificationItem.Type.COMMENT
+            );
+        }
     }
 
     public void deleteComment(Long commentId) {
@@ -46,6 +58,7 @@ public class CommentService {
                 !comment.getPost().getUser().getId().equals(currentUser.getId())) {
             throw new RuntimeException("You are not allowed to delete this comment!");
         }
+
         commentRepository.delete(comment);
     }
 }

@@ -33,6 +33,8 @@ public class ChatController {
         dto.setId(chat.getId());
         dto.setUser1Username(chat.getUser1().getUsername());
         dto.setUser2Username(chat.getUser2().getUsername());
+        dto.setUser1AvatarUrl(chat.getUser1().getAvatarUrl()); // заповнюємо
+        dto.setUser2AvatarUrl(chat.getUser2().getAvatarUrl());
         dto.setCreatedAt(chat.getCreatedAt());
 
         return ResponseEntity.ok(dto);
@@ -47,6 +49,8 @@ public class ChatController {
             dto.setId(chat.getId());
             dto.setUser1Username(chat.getUser1().getUsername());
             dto.setUser2Username(chat.getUser2().getUsername());
+            dto.setUser1AvatarUrl(chat.getUser1().getAvatarUrl()); // заповнюємо
+            dto.setUser2AvatarUrl(chat.getUser2().getAvatarUrl());
             dto.setCreatedAt(chat.getCreatedAt());
             return dto;
         }).toList();

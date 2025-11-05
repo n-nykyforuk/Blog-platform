@@ -9,5 +9,7 @@ public class ChatDTO {
     private Long id;
     private String user1Username;
     private String user2Username;
+    private String user1AvatarUrl; // нове
+    private String user2AvatarUrl;
     private Date createdAt;
 }

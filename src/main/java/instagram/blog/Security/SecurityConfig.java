@@ -29,14 +29,19 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 🔓 дозволяємо доступ до реєстрації, логіну і створення постів
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/create-post/**").permitAll()
-                        // 🔓 дозволяємо доступ до статичних зображень (uploads)
-                        .requestMatchers("/uploads/**").permitAll()
-                        // 🧱 всі інші запити вимагають аутентифікації
+                        // 🔓 Публічні ендпоїнти
+                        .requestMatchers(
+                                "/api/auth/**",       // логін/реєстрація
+                                "/uploads/**",        // доступ до зображень
+                                "/ws/**",             // WebSocket handshake
+                                "/topic/**",          // STOMP повідомлення
+                                "/api/create-post/**" // створення постів
+                        ).permitAll()
+
+                        // 🧱 Усі інші — тільки для авторизованих користувачів
                         .anyRequest().authenticated()
                 )
+                // ⚙️ Без стану — бо JWT
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

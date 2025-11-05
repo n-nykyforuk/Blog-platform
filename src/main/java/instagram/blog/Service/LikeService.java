@@ -20,6 +20,9 @@ public class LikeService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public String toggleLike(Long postId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsernameOrEmail(username, username)
@@ -38,6 +41,16 @@ public class LikeService {
             like.setUser(user);
             like.setPost(post);
             likeRepository.save(like);
+
+            User postOwner = post.getUser();
+            if (!postOwner.getId().equals(user.getId())) {
+                notificationService.addNotification(
+                        postOwner.getId().toString(),
+                        user.getUsername(),
+                        NotificationItem.Type.LIKE
+                );
+            }
+
             return "Post liked";
         }
     }

@@ -56,7 +56,7 @@ public class AuthService {
         String username = authentication.getName();
         String token = jwtService.generateToken(username);
 
-        return new LoginResponse(token, username);
+        return new LoginResponse(token, username); // 👈 повертаємо тільки token і username, без id
     }
 
 }
