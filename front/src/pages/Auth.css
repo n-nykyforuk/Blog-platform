@@ -1,0 +1,85 @@
+/* Центрування сторінки */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(120deg, #f8fafc, #e2e8f0);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Назва зверху */
+.app-title {
+  position: absolute;
+  top: 40px;
+  text-align: center;
+  font-size: 2rem;
+  color: #2d3748;
+}
+
+/* Карточка форми */
+.auth-card {
+  background: white;
+  padding: 2rem 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 320px;
+}
+
+.auth-card h2 {
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+}
+
+/* Поля вводу */
+.auth-card input {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+.auth-card input:focus {
+  border-color: #4299e1;
+  outline: none;
+}
+
+/* Кнопка */
+.auth-card button {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.auth-card button:hover {
+  background-color: #2b6cb0;
+}
+
+/* Текст перемикання */
+.switch-text {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+.switch-link {
+  color: #3182ce;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.switch-link:hover {
+  text-decoration: underline;
+}
